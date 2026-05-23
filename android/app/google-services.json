@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "552555529132",
+    "project_id": "fairwork-1c1f6",
+    "storage_bucket": "fairwork-1c1f6.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:552555529132:android:ccfb2f8aa8886338bfb009",
+        "android_client_info": {
+          "package_name": "com.fairwork"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCdfBReP24anPOwmRRBGf2CtrlcokjirSs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
