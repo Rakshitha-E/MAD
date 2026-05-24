@@ -1,209 +1,137 @@
-import React, {useContext, useMemo, useState} from 'react';
+import React, {useState} from 'react';
 import {
+  View,
   Text,
   TouchableOpacity,
-  StyleSheet,
-  ScrollView,
   Alert,
-  View,
+  StyleSheet,
 } from 'react-native';
-import {AuthContext} from '../context/AuthContext';
-import {applyToJob} from '../services/jobService';
-import {createNotification} from '../services/notificationService';
 
-const JobDetailsScreen = ({route, navigation}) => {
+const JobDetailsScreen = ({route}) => {
   const {job} = route.params;
-  const {user, profile} = useContext(AuthContext);
-  const [applying, setApplying] = useState(false);
-  const [applied, setApplied] = useState(
-    job?.applicants?.some(a => a.userId === user.uid),
-  );
 
-  const isOwner = useMemo(
-    () => job?.employerId === user.uid,
-    [job, user.uid],
-  );
-
-  const canApply = useMemo(
-    () => !isOwner && profile?.role === 'worker',
-    [isOwner, profile?.role],
-  );
+  const [applied, setApplied] = useState(false);
 
   const handleApply = async () => {
-    if (!profile || !user?.uid) {
-      Alert.alert('Error', 'Unable to apply. Please sign in again.');
-      return;
-    }
-
     if (applied) {
       Alert.alert('Application sent', 'You already applied to this job.');
       return;
     }
 
-    setApplying(true);
-    try {
-      await applyToJob(job.id, user.uid, profile.name);
-      await createNotification(job.employerId, {
-        userId: user.uid,
-        title: 'New Job Application',
-        body: `${profile.name} applied to ${job.title}`,
-        jobId: job.id,
-      });
-      setApplied(true);
-      Alert.alert('Success', 'Your application was submitted.');
-    } catch (error) {
-      Alert.alert('Error', error.message || 'Failed to apply.');
-    } finally {
-      setApplying(false);
-    }
+    setApplied(true);
+
+    Alert.alert('Success', 'Your application was submitted.');
   };
 
-
   return (
-    <ScrollView contentContainerStyle={styles.page}>
-      <View style={styles.card}>
-        <Text style={styles.title}>{job.title}</Text>
-        <Text style={styles.badge}>{job.type || 'Job Role'}</Text>
+    <View style={styles.container}>
+      <Text style={styles.title}>{job.title}</Text>
 
-        <Text style={styles.employer}>{job.employerName || 'Employer'}</Text>
-        <View style={styles.metaRow}>
-          <Text style={styles.meta}>{job.location || 'Remote'}</Text>
-          <Text style={styles.meta}>${job.salary}</Text>
-        </View>
-
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>About the role</Text>
-          <Text style={styles.description}>{job.description}</Text>
-        </View>
-
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Applications</Text>
-          <Text style={styles.description}>
-            {job.applicants?.length || 0} candidate{job.applicants?.length === 1 ? '' : 's'} applied
-          </Text>
-        </View>
-
-        {canApply ? (
-          <TouchableOpacity
-            style={[styles.button, (applied || applying) && styles.disabledButton]}
-            onPress={handleApply}
-            disabled={applied || applying}>
-            <Text style={styles.buttonText}>{applied ? 'Applied' : 'Apply Now'}</Text>
-          </TouchableOpacity>
-        ) : (
-          !isOwner && (
-            <View style={styles.noticeBox}>
-              <Text style={styles.noticeText}>Only workers can apply for jobs.</Text>
-            </View>
-          )
-        )}
-
-        
+      <View style={styles.badge}>
+        <Text style={styles.badgeText}>{job.type}</Text>
       </View>
-    </ScrollView>
+
+      <Text style={styles.company}>{job.employerName}</Text>
+      <Text style={styles.location}>{job.location}</Text>
+
+      <Text style={styles.salary}>₹{job.salary}</Text>
+
+      <Text style={styles.section}>About the role</Text>
+
+      <Text style={styles.description}>
+        {job.description}
+      </Text>
+
+      <TouchableOpacity
+        style={[
+          styles.applyButton,
+          applied && styles.appliedButton,
+        ]}
+        onPress={handleApply}>
+        <Text style={styles.applyText}>
+          {applied ? 'Applied' : 'Apply Now'}
+        </Text>
+      </TouchableOpacity>
+    </View>
   );
 };
 
 export default JobDetailsScreen;
 
 const styles = StyleSheet.create({
-  page: {
-    flexGrow: 1,
+  container: {
+    flex: 1,
     backgroundColor: '#0f172a',
     padding: 20,
   },
-  card: {
-    backgroundColor: '#111827',
-    borderRadius: 24,
-    padding: 24,
-    shadowColor: '#000',
-    shadowOpacity: 0.22,
-    shadowRadius: 28,
-    shadowOffset: {width: 0, height: 18},
-    elevation: 12,
-  },
+
   title: {
     color: '#fff',
     fontSize: 30,
     fontWeight: '900',
-    marginBottom: 10,
+    marginBottom: 12,
   },
+
   badge: {
     alignSelf: 'flex-start',
     backgroundColor: '#f8b500',
-    borderRadius: 999,
     paddingHorizontal: 14,
-    paddingVertical: 8,
-    color: '#111827',
-    fontWeight: '700',
+    paddingVertical: 6,
+    borderRadius: 20,
     marginBottom: 18,
   },
-  employer: {
-    color: '#cbd5e1',
-    fontSize: 16,
+
+  badgeText: {
+    color: '#111827',
+    fontWeight: '800',
+  },
+
+  company: {
+    color: '#fff',
+    fontSize: 18,
+    fontWeight: '700',
     marginBottom: 6,
   },
-  metaRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 20,
-  },
-  meta: {
+
+  location: {
     color: '#94a3b8',
-    fontSize: 14,
+    marginBottom: 16,
   },
+
+  salary: {
+    color: '#fff',
+    fontSize: 22,
+    fontWeight: '800',
+    marginBottom: 24,
+  },
+
   section: {
-    marginBottom: 22,
-  },
-  sectionTitle: {
     color: '#fff',
     fontSize: 18,
     fontWeight: '800',
     marginBottom: 10,
   },
+
   description: {
     color: '#cbd5e1',
-    lineHeight: 22,
-    fontSize: 15,
+    lineHeight: 24,
+    marginBottom: 40,
   },
-  button: {
+
+  applyButton: {
     backgroundColor: '#f8b500',
-    borderRadius: 18,
     paddingVertical: 16,
+    borderRadius: 18,
     alignItems: 'center',
-    marginTop: 8,
   },
-  disabledButton: {
-    backgroundColor: '#475569',
+
+  appliedButton: {
+    backgroundColor: '#16a34a',
   },
-  buttonText: {
+
+  applyText: {
     color: '#111827',
-    fontSize: 16,
     fontWeight: '900',
-  },
-  secondaryButton: {
-    marginTop: 12,
-    paddingVertical: 16,
-    borderRadius: 18,
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: '#334155',
-  },
-  secondaryText: {
-    color: '#fff',
     fontSize: 16,
-    fontWeight: '700',
-  },
-  noticeBox: {
-    marginTop: 12,
-    backgroundColor: '#1f2937',
-    borderRadius: 18,
-    padding: 16,
-    borderWidth: 1,
-    borderColor: '#334155',
-  },
-  noticeText: {
-    color: '#94a3b8',
-    textAlign: 'center',
   },
 });

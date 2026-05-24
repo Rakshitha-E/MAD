@@ -96,7 +96,7 @@ const AddJobScreen = ({navigation}) => {
           <View style={styles.halfInput}>
             <Text style={styles.label}>Salary</Text>
             <TextInput
-              placeholder="USD"
+              placeholder="INR"
               placeholderTextColor="#94a3b8"
               style={styles.input}
               keyboardType="numeric"

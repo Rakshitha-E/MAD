@@ -87,7 +87,7 @@ const ManageJobsScreen = () => {
                 <Text style={styles.jobType}>{item.type}</Text>
               </View>
               <Text style={styles.jobText}>{item.employerName || 'Employer'}</Text>
-              <Text style={styles.jobText}>${item.salary}</Text>
+              <Text style={styles.jobText}>₹{item.salary}</Text>
               <TouchableOpacity
                 style={styles.deleteButton}
                 onPress={() => handleDelete(item.id)}>

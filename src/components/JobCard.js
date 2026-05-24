@@ -15,7 +15,7 @@ const JobCard = ({job, onPress}) => {
       <Text style={styles.location}>{job.location || 'Location not set'}</Text>
 
       <View style={styles.bottomRow}>
-        <Text style={styles.salary}>${job.salary}</Text>
+        <Text style={styles.salary}>₹{job.salary}</Text>
         <View style={styles.actionBubble}>
           <Text style={styles.actionText}>View</Text>
         </View>

@@ -14,12 +14,30 @@ export const createJob = async (jobData) => {
 };
 
 export const applyToJob = async (jobId, userId, userName) => {
-  await firestore().collection('jobs').doc(jobId).update({
-    applicants: firestore.FieldValue.arrayUnion({
-      userId,
-      userName,
-      appliedAt: firestore.FieldValue.serverTimestamp(),
-    }),
+  const jobRef = firestore().collection('jobs').doc(jobId);
+
+  await firestore().runTransaction(async transaction => {
+    const snap = await transaction.get(jobRef);
+    if (!snap.exists) {
+      throw new Error('Job not found');
+    }
+
+    const data = snap.data() || {};
+    const applicants = Array.isArray(data.applicants) ? data.applicants : [];
+
+    const alreadyApplied = applicants.some(a => a?.userId === userId);
+    if (alreadyApplied) return;
+
+    const nextApplicants = [
+      ...applicants,
+      {
+        userId,
+        userName,
+        appliedAt: firestore.FieldValue.serverTimestamp(),
+      },
+    ];
+
+    transaction.update(jobRef, {applicants: nextApplicants});
   });
 };
 

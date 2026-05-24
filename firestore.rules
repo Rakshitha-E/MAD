@@ -83,19 +83,11 @@ service cloud.firestore {
         // WORKER APPLIES
         (
           isWorker() &&
-
-          request.resource.data.applicants.size() >
-          resource.data.applicants.size()
-
-          &&
-
-          request.resource.data.employerId ==
-          resource.data.employerId
-
-          &&
-
-          request.resource.data.title ==
-          resource.data.title
+          // employerId/title must not change
+          request.resource.data.employerId == resource.data.employerId &&
+          request.resource.data.title == resource.data.title &&
+          // applicants array must only grow
+          request.resource.data.applicants.size() > resource.data.applicants.size()
         );
 
       // DELETE JOB
