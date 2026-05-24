@@ -26,12 +26,29 @@ const AuthProvider = ({children}) => {
         setUser(currentUser);
         profileUnsubscribe = profileRef.onSnapshot(
           snapshot => {
-            setProfile(snapshot?.exists ? snapshot.data() : null);
+            if (snapshot?.exists) {
+              setProfile(snapshot.data());
+            } else {
+              // Fallback profile when Firestore doc is missing so UI shows sensible values
+              const fallbackName =
+                currentUser.displayName || currentUser.email?.split('@')[0] || 'FairWork User';
+              setProfile({
+                name: fallbackName,
+                email: currentUser.email,
+                role: 'user',
+              });
+            }
             setLoading(false);
           },
           error => {
             console.log('Profile snapshot error:', error);
-            setProfile(null);
+            const fallbackName =
+              currentUser.displayName || currentUser.email?.split('@')[0] || 'FairWork User';
+            setProfile({
+              name: fallbackName,
+              email: currentUser.email,
+              role: 'user',
+            });
             setLoading(false);
           },
         );

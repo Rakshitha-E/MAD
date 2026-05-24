@@ -24,7 +24,17 @@ const JobDetailsScreen = ({route, navigation}) => {
     [job, user.uid],
   );
 
+  const canApply = useMemo(
+    () => !isOwner && profile?.role === 'worker',
+    [isOwner, profile?.role],
+  );
+
   const handleApply = async () => {
+    if (!profile || !user?.uid) {
+      Alert.alert('Error', 'Unable to apply. Please sign in again.');
+      return;
+    }
+
     if (applied) {
       Alert.alert('Application sent', 'You already applied to this job.');
       return;
@@ -73,13 +83,19 @@ const JobDetailsScreen = ({route, navigation}) => {
           </Text>
         </View>
 
-        {!isOwner && (
+        {canApply ? (
           <TouchableOpacity
             style={[styles.button, (applied || applying) && styles.disabledButton]}
             onPress={handleApply}
             disabled={applied || applying}>
             <Text style={styles.buttonText}>{applied ? 'Applied' : 'Apply Now'}</Text>
           </TouchableOpacity>
+        ) : (
+          !isOwner && (
+            <View style={styles.noticeBox}>
+              <Text style={styles.noticeText}>Only workers can apply for jobs.</Text>
+            </View>
+          )
         )}
 
         
@@ -177,5 +193,17 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 16,
     fontWeight: '700',
+  },
+  noticeBox: {
+    marginTop: 12,
+    backgroundColor: '#1f2937',
+    borderRadius: 18,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: '#334155',
+  },
+  noticeText: {
+    color: '#94a3b8',
+    textAlign: 'center',
   },
 });

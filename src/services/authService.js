@@ -5,7 +5,7 @@ const ADMIN_EMAIL = 'admin@gmail.com';
 const ADMIN_PASSWORD = 'admin@123';
 
 export const isAdminCredential = (email, password) =>
-  email?.trim().toLowerCase() === ADMIN_EMAIL && password === ADMIN_PASSWORD;
+  email?.trim().toLowerCase() === ADMIN_EMAIL && password?.trim() === ADMIN_PASSWORD;
 
 export const signupUser = async (
   name,
@@ -95,5 +95,23 @@ export const getUsersRealtime = (
 export const updateUserRole = async (userId, role) => {
   await firestore().collection('users').doc(userId).update({
     role,
+    updatedAt: firestore.FieldValue.serverTimestamp(),
   });
+};
+
+export const deleteUserProfile = async userId => {
+  await firestore().collection('users').doc(userId).delete();
+};
+
+export const setAdminRole = async (uid, email) => {
+  // Direct Firestore write - user can update their own profile
+  await firestore().collection('users').doc(uid).set(
+    {
+      name: 'Admin',
+      email,
+      role: 'admin',
+      updatedAt: firestore.FieldValue.serverTimestamp(),
+    },
+    {merge: true},
+  );
 };

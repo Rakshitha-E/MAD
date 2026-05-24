@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useState, useContext} from 'react';
 import {
   View,
   Text,
@@ -8,9 +8,11 @@ import {
   Alert,
   StyleSheet,
 } from 'react-native';
-import {getUsersRealtime, updateUserRole} from '../services/authService';
+import {getUsersRealtime, updateUserRole, deleteUserProfile} from '../services/authService';
+import {AuthContext} from '../context/AuthContext';
 
 const ManageUsersScreen = () => {
+  const {profile} = useContext(AuthContext);
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -40,6 +42,33 @@ const ManageUsersScreen = () => {
       Alert.alert('Error', 'Unable to update role.');
     }
   };
+
+  const deleteUser = async id => {
+    Alert.alert('Delete user', 'Are you sure you want to remove this user?', [
+      {text: 'Cancel', style: 'cancel'},
+      {
+        text: 'Delete',
+        style: 'destructive',
+        onPress: async () => {
+          try {
+            await deleteUserProfile(id);
+            Alert.alert('Deleted', 'User removed successfully.');
+          } catch (error) {
+            Alert.alert('Error', 'Unable to delete user.');
+          }
+        },
+      },
+    ]);
+  };
+
+  if (profile?.role !== 'admin') {
+    return (
+      <View style={styles.page}>
+        <Text style={styles.title}>Access Denied</Text>
+        <Text style={styles.subtitle}>Only admins can manage users.</Text>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.page}>
@@ -77,6 +106,11 @@ const ManageUsersScreen = () => {
                   </TouchableOpacity>
                 ))}
               </View>
+              <TouchableOpacity
+                style={styles.deleteButton}
+                onPress={() => deleteUser(item.id)}>
+                <Text style={styles.deleteText}>Delete</Text>
+              </TouchableOpacity>
             </View>
           )}
           contentContainerStyle={styles.list}
@@ -157,6 +191,17 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontWeight: '700',
     textTransform: 'capitalize',
+  },
+  deleteButton: {
+    marginTop: 10,
+    backgroundColor: '#dc2626',
+    paddingVertical: 12,
+    borderRadius: 14,
+    alignItems: 'center',
+  },
+  deleteText: {
+    color: '#fff',
+    fontWeight: '800',
   },
   emptyContainer: {
     flex: 1,

@@ -1,0 +1,123 @@
+rules_version = '2';
+
+service cloud.firestore {
+
+  match /databases/{database}/documents {
+
+    // =========================
+    // HELPERS
+    // =========================
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function userRole() {
+      return get(
+        /databases/$(database)/documents/users/$(request.auth.uid)
+      ).data.role;
+    }
+
+    function isWorker() {
+      return userRole() == 'worker';
+    }
+
+    function isEmployer() {
+      return userRole() == 'employer';
+    }
+
+    function isAdmin() {
+      return userRole() == 'admin';
+    }
+
+    // =========================
+    // USERS
+    // =========================
+
+    match /users/{userId} {
+
+      allow read: if isSignedIn();
+
+      allow create: if
+        isSignedIn() &&
+        request.auth.uid == userId;
+
+      allow update, delete: if
+        request.auth.uid == userId ||
+        isAdmin();
+    }
+
+    // =========================
+    // JOBS
+    // =========================
+
+    match /jobs/{jobId} {
+
+      // READ
+      allow read: if isSignedIn();
+
+      // CREATE JOB
+      allow create: if
+        isSignedIn() &&
+        (
+          isEmployer() ||
+          isAdmin()
+        );
+
+      // UPDATE JOB
+      allow update: if
+
+        // ADMIN
+        isAdmin()
+
+        ||
+
+        // EMPLOYER EDITS OWN JOB
+        (
+          isEmployer() &&
+          resource.data.employerId == request.auth.uid
+        )
+
+        ||
+
+        // WORKER APPLIES
+        (
+          isWorker() &&
+
+          request.resource.data.applicants.size() >
+          resource.data.applicants.size()
+
+          &&
+
+          request.resource.data.employerId ==
+          resource.data.employerId
+
+          &&
+
+          request.resource.data.title ==
+          resource.data.title
+        );
+
+      // DELETE JOB
+      allow delete: if
+
+        isAdmin()
+
+        ||
+
+        (
+          isEmployer() &&
+          resource.data.employerId == request.auth.uid
+        );
+    }
+
+    // =========================
+    // NOTIFICATIONS
+    // =========================
+
+    match /notifications/{notificationId} {
+
+      allow read, write: if isSignedIn();
+    }
+  }
+}

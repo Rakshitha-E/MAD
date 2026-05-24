@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useState, useContext} from 'react';
 import {
   View,
   Text,
@@ -9,8 +9,10 @@ import {
   StyleSheet,
 } from 'react-native';
 import {getJobsRealtime, deleteJob} from '../services/jobService';
+import {AuthContext} from '../context/AuthContext';
 
 const ManageJobsScreen = () => {
+  const {profile} = useContext(AuthContext);
   const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -48,6 +50,15 @@ const ManageJobsScreen = () => {
       },
     ]);
   };
+
+  if (profile?.role !== 'admin') {
+    return (
+      <View style={styles.page}>
+        <Text style={styles.title}>Access Denied</Text>
+        <Text style={styles.subtitle}>Only admins can manage jobs.</Text>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.page}>

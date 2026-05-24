@@ -26,6 +26,7 @@ const AddJobScreen = ({navigation}) => {
     }
 
     try {
+      console.log('createJob called with uid=', user?.uid, 'role=', profile?.role);
       await createJob({
         title,
         description,
@@ -45,9 +46,22 @@ const AddJobScreen = ({navigation}) => {
       setLocation('');
       navigation.navigate('Home');
     } catch (error) {
-      Alert.alert('Error', error.message || 'Failed to post job');
+      console.log('createJob error:', error, 'uid=', user?.uid, 'role=', profile?.role);
+      Alert.alert(
+        'Error',
+        `${error?.message || 'Failed to post job'}\nUID: ${user?.uid || 'unknown'}\nRole: ${profile?.role || 'unknown'}`,
+      );
     }
   };
+
+  if (profile?.role !== 'employer' && profile?.role !== 'admin') {
+    return (
+      <View style={styles.page}>
+        <Text style={styles.header}>Access Denied</Text>
+        <Text style={styles.subheader}>Only employers or admins can post jobs.</Text>
+      </View>
+    );
+  }
 
   return (
     <ScrollView contentContainerStyle={styles.page}>
